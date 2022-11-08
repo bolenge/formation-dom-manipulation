@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo list - Manipulation de DOM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  </head>
+  <body>
+    <div class="container p-5">
+      <div class="row">
+        <div class="col-lg-6 mx-auto">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title text-center">Todo list</h3>
+            </div>
+            <div class="card-body">
+              <div>
+                <h5>Nouvelle tâche</h5>
+                <form method="post">
+                  <div class="form-group d-flex">
+                    <input type="text" id="task" class="form-control" placeholder="Que pensez-vous faire après ?" />
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="mt-5">
+                <h5>Taches encours</h5>
+
+                <div class="table-responsive">
+                  <table class="table" aria-describedby="">
+                    <thead>
+                      <tr>
+                        <th>Tâche</th>
+                        <th class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody-tasks-inprogress">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <h5>Taches terminées</h5>
+
+                <div class="table-responsive">
+                  <table class="table" aria-describedby="">
+                    <thead>
+                      <tr>
+                        <th>Tâche</th>
+                        <th class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody-tasks-completed">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" defer>
+      const tasks = [
+        {id: 1, entitled: 'Hello world !', completed: false},
+        {id: 2, entitled: 'Nouvelle tache', completed: true},
+        {id: 3, entitled: 'Une autre tache', completed: false},
+      ]
+
+      function loadTasks(completed = true) {
+        const tbodyTasksId = !completed ? '#tbody-tasks-inprogress' : '#tbody-tasks-completed'
+        const tbodyTasksInprogress = document.querySelector(tbodyTasksId)
+        
+        tasks.map((task) => {
+          if (task.completed === completed) {
+            tbodyTasksInprogress.append(taskTemplate(task))
+          }
+        })
+      }
+
+      function prependTask(task, tbodyTasksId = '#tbody-tasks-inprogress') {
+        const tbodyTasksInprogress = document.querySelector(tbodyTasksId)
+        tbodyTasksInprogress.prepend(taskTemplate(task))
+      }
+
+      function loadTasksCompleted() {
+        loadTasks(true)
+      }
+
+      function loadTasksInprogress() {
+        loadTasks(false)
+      }
+
+      function taskTemplate (task) {
+        const btnRestoreTemplate = `<a href="#" class="btn btn-sm btn-success btn-restore">
+          <span class="fa fa-share"></span>
+        </a>`
+        const btnCompleteTemplate = `<a href="#" class="btn btn-sm btn-success btn-complete">
+          <span class="fa fa-check"></span>
+        </a>`
+         const btnEditTemplate = `<a href="#" class="btn btn-sm btn-info btn-edit" onclick="editTask(event, ${task.id})">
+            <span class="fa fa-pencil"></span>
+          </a>`
+
+        const tr = document.createElement('tr')
+
+        tr.innerHTML = `
+          <td id="${task.id}" class="${task.completed ? 'text-decoration-line-through' : ''}">${task.entitled}</td>
+          <td class="text-end">
+            ${!task.completed ? btnEditTemplate : ''}
+            <a href="#" class="btn btn-sm btn-danger btn-delete">
+              <span class="fa fa-trash"></span>
+            </a>
+            ${!task.completed ? btnCompleteTemplate : btnRestoreTemplate}
+          </td>
+        `
+
+        return tr
+      }
+
+      function createTask() {
+        const formTask = document.getElementsByTagName('form')[0]
+
+        formTask.addEventListener('submit', (e) => {
+          e.preventDefault()
+
+          const currentEl = e.currentTarget
+          const taskInput = document.getElementById('task')
+          const taskValue = taskInput.value
+
+          if (taskValue.length <= 0) {
+            alert('Veuillez saisir quelque chose')
+            return
+          }
+
+          const lastTaskId = tasks[tasks.length - 1].id
+          const task = {
+            id: lastTaskId + 1,
+            entitled: taskValue,
+            completed: false
+          } 
+
+          // Create new task
+          tasks.push(task)
+          prependTask(task)
+
+          // Reset form and focus input
+          currentEl.reset()
+          taskInput.focus()
+        })
+      }
+
+      function editTask(event, id) {
+        event.preventDefault()
+        const currentElement = event.currentTarget
+        const task = tasks.find(t => t.id == id)
+
+        console.log('TASK FOUND', task)
+      }
+
+      createTask()
+      loadTasksCompleted()
+      loadTasksInprogress()
+    </script>
+  </body>
+</html>
